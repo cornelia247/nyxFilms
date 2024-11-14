@@ -23,7 +23,7 @@ const serviceName = "rating"
 
 func main() {
 
-	f, err := os.Open("base.yml")
+	f, err := os.Open("../configs/base.yml")
 	if err != nil {
 		panic(err)
 	}
@@ -32,7 +32,7 @@ func main() {
 	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
 		panic(err)
 	}
-	port := cfg.API.port
+	port := cfg.API.Port
 	log.Printf("Starting he rating service on port %d", port)
 	registry, err := consul.NewRegistry("localhost:8500")
 	if err != nil {

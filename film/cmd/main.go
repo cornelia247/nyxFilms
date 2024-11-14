@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"github.com/cornelia247/nyxfilms/film/internal/controller/film"
@@ -17,14 +17,22 @@ import (
 	"github.com/cornelia247/nyxfilms/pkg/discovery/consul"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"gopkg.in/yaml.v2"
 )
 
 const serviceName = "film"
 
 func main() {
-	var port int
-	flag.IntVar(&port, "port", 8083, "API handler port")
-	flag.Parse()
+	f, err := os.Open("base.yml")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	var cfg config
+	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		panic(err)
+	}
+	port := cfg.API.port
 	log.Printf("Starting the film service on port %d", port)
 	registry, err := consul.NewRegistry("localhost:8500")
 	if err != nil {

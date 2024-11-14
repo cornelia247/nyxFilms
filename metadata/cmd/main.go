@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"github.com/cornelia247/nyxfilms/gen"
@@ -16,14 +16,22 @@ import (
 	"github.com/cornelia247/nyxfilms/pkg/discovery/consul"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"gopkg.in/yaml.v3"
 )
 
 const serviceName = "metadata"
 
 func main() {
-	var port int
-	flag.IntVar(&port, "port", 8081, "API handler port")
-	flag.Parse()
+	f, err := os.Open("base.yml")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	var cfg config
+	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		panic(err)
+	}
+	port := cfg.API.port
 	log.Printf("Starting the metadata service on port %d", port)
 	registry, err := consul.NewRegistry("localhost:8500")
 	if err != nil {
@@ -47,12 +55,7 @@ func main() {
 	repo := memory.New()
 	ctrl := metadata.New(repo)
 
-	// HTTP JSON HANDLER.
-	// h := httphandler.New(ctrl)
-	// http.Handle("/metadata", http.HandlerFunc(h.GetMetadata))
-	// if err := http.ListenAndServe(fmt.Sprintf(":%d",port), nil); err != nil {
-	// 	panic(err)
-	// }
+	
 
 	// PROTOBUFF HANDLER.
 	h := grpchandler.New(ctrl)

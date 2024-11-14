@@ -13,7 +13,7 @@ import (
 	"github.com/cornelia247/nyxfilms/pkg/discovery/consul"
 	"github.com/cornelia247/nyxfilms/rating/internal/controller/rating"
 	grpchandler "github.com/cornelia247/nyxfilms/rating/internal/handler/grpc"
-	"github.com/cornelia247/nyxfilms/rating/internal/repository/memory"
+	"github.com/cornelia247/nyxfilms/rating/internal/repository/mysql"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -47,8 +47,11 @@ func main() {
 
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
-	repo := memory.New()
-	ctrl := rating.New(repo)
+	repo, err := mysql.New()
+	if err != nil {
+		panic(err)
+	}
+	ctrl := rating.New(repo, nil)
 
 	// HTTP HANDLER.
 	// h := httphandler.New(ctrl)
